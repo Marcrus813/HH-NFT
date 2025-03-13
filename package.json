@@ -8,6 +8,7 @@
         "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
         "@nomicfoundation/hardhat-toolbox": "^5.0.0",
         "@nomicfoundation/hardhat-verify": "^2.0.0",
+        "@pinata/sdk": "^2.1.0",
         "@typechain/ethers-v6": "^0.5.0",
         "@typechain/hardhat": "^9.0.0",
         "chai": "^4.2.0",
@@ -25,7 +26,9 @@
         "h-test": "hardhat test",
         "h-test-s": "hardhat test --network sepolia",
         "h-node": "hardhat node",
-        "h-deploy": "hardhat ignition deploy",
+        "h-i-deploy": "hardhat ignition deploy",
+        "h-s-deploy": "hardhat run scripts/deploy.js",
+        "h-s-deploy-custom": "CUSTOM_TOKEN=true yarn hardhat run scripts/deploy.js ",
         "h-verify": "hardhat ignition verify",
         "h-run": "hardhat run"
     },

@@ -20,6 +20,8 @@
 
 ## Coding
 
+### Basic NFT
+
 - Inheritance
     - Different from ERC-20, ERC-721 includes some extensions, we can chose from based on our needs(URI based? Burnable?)
 - Minting
@@ -52,3 +54,42 @@
         - **NOTE**
             - `string` is not supported as immutable, for it has to point to a value, so it could be the same for other reference types(array, map)
     - For these assets, storing decentralized is preferred, so it is best practice to use `ipfs://` instead of `https`
+
+### Random IPFS NFT
+
+- Random
+
+    - Mint will trigger VRF -> Random number -> Dice to decide the token
+    - Implementation
+
+        - Mapping
+            - Currently, `requestNft` gets called, returns a `requestId`, it is not what we need for NFT, we mint the NFT in `fulfillRandomWords` -> Token is owned by chainlink node who fulfilled the random word, so we need to use a mapping to store person who called `requestNft` and the corresponding `requestId`, then use `requestId` in `fulfillRandomWords` to get the actual owner of the token, see code for more info
+        - Rarity
+            - Basic idea of how to set rarity, see code
+            - **NOTE**
+                - Solidity `try/catch`: [example](https://www.cyfrin.io/glossary/try-catch-solidity-code-example), it seems that unlike other languages, try/catch can only be used with external function calls
+        - Differentiate tokens
+            - Now I have tier, we use a enum `Breed` to map the tier to a specified token:
+            ```solidity
+            enum Breed {
+                PUG,
+                SHIBA,
+                HUSKY
+            }
+            ```
+            Then based on the breed, we can call `_setTokenURI` from `ERC721URIStorage` version from `openzeppelin`, **THIS IS NOT GAS EFFICIENT**, then set the target token URI to which we want
+        - **NOTE**
+            - [Conflicts between imports](https://ethereum.stackexchange.com/questions/164508/migration-to-vrf-2-5-resolving-conflicts-between-chainlink-vrf-v2-5-and-openze)
+                - `_transferOwnership`, `owner()`..., this is because there's an inheritance link: VRFConsumerBaseV2Plus -> ConfirmedOwner -> ConfirmedOwnerWithProposal -> IOwnable, so we don't need `is Ownable`
+            - `ERC721URIStorage` has overridden `tokenURI`, so we don't need it anymore
+        - Getting our own token URIs:
+
+            > 1. Use our own local IPFS node(Centralized, not preferred, could give it a shot later)
+            > 2. Pinata
+            > 3. NFT storage(Filecoin)
+
+            Here, we use Pinata - Pinata
+
+            - Process: Store image -> Store metadata
+            - **Notes**
+                - We will be doing some async functions, since it is not allowed in ignition script, we first construct our ignition script, then write a `deploy.js` in `scripts`, and run it to deploy, see [example](https://hardhat.org/ignition/docs/guides/scripts), since we might have to go by this approach in the future, this may be our only practice from now on(will modify `h-deploy` in `package.json`)

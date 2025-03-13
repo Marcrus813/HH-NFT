@@ -7,5 +7,5 @@ const basicNftResource = {
 };
 
 module.exports = {
-    basicNftResource
-}
+    basicNftResource,
+};
