@@ -1,6 +1,12 @@
 const randomIpfsNftModule = require("../ignition/modules/randomIpfsNft");
 const { ignition } = require("hardhat");
-const { storeImages } = require("../utils/uploadImageToPinata");
+const {
+    storeImages,
+    storeTokenUriMetadata,
+} = require("../utils/uploadImageToPinata");
+const {
+    metadataTemplate,
+} = require("../resources/metadata/randomIpfsNft.template");
 
 const tokenImagesDir = "../resources/images/";
 const contractIndex = process.env.CONTRACT_INDEX || "0";
@@ -8,7 +14,22 @@ const contractIndex = process.env.CONTRACT_INDEX || "0";
 async function getIpfsTokenUris() {
     let tokenUris = ["", "", ""];
     const imgSrcDir = tokenImagesDir + "randomIpfsNft";
-    await storeImages(imgSrcDir);
+
+    // Get the responses of the uploaded images
+    const { uploadResponseArray, files } = await storeImages(imgSrcDir);
+    for (imageUploadResponse in uploadResponseArray) { // In this syntax, imageUploadResponse is the index
+        // Create metadata -> upload metadata
+        let tokenUriMetadata = {...metadataTemplate};
+        tokenUriMetadata.name = files[imageUploadResponse].replace(".png", ""); // Getting the file name without the extension
+        tokenUriMetadata.description = `A ${tokenUriMetadata.name} friend!`;
+        tokenUriMetadata.image = `ipfs://${uploadResponseArray[imageUploadResponse].cid}`; // Use cid to retrieve
+
+        // Upload metadata
+        const metadataUploadResponse = await storeTokenUriMetadata(tokenUriMetadata);
+        if (metadataUploadResponse) {
+            tokenUris[Number(imageUploadResponse)] = `ipfs://${metadataUploadResponse.cid}`;
+        }
+    }
     return tokenUris;
 }
 

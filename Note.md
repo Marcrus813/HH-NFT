@@ -93,3 +93,51 @@
             - Process: Store image -> Store metadata
             - **Notes**
                 - We will be doing some async functions, since it is not allowed in ignition script, we first construct our ignition script, then write a `deploy.js` in `scripts`, and run it to deploy, see [example](https://hardhat.org/ignition/docs/guides/scripts), since we might have to go by this approach in the future, this may be our only practice from now on(will modify `h-deploy` in `package.json`)
+            - Pinata upload
+                - I am following [official docs](https://docs.pinata.cloud/frameworks/node-js#upload-a-file-to-pinata) to avoid any possible outdated code in the tutorial, still have questions about possible `options`, response:
+                ```json
+                {
+                    "id": "01958fab-a806-7fbc-a17d-e2efaf23e7b2",
+                    "user_id": "98de0cc3-3b79-47b4-a2fa-92458fe5a104",
+                    "group_id": null,
+                    "name": "border_collie.png",
+                    "cid": "bafybeifgbvzmanb2rlw3bqm2etzvfnyiyydvopahele57voh4dz22r3aly", // Use this for imgUri
+                    "created_at": "2025-03-13T13:22:27.093Z",
+                    "size": 1168288,
+                    "number_of_files": 1,
+                    "mime_type": "image/png",
+                    "vectorized": false,
+                    "network": "public"
+                }
+                ```
+                - `options`, see src of `pinata.upload.public.file`
+                ```typescript
+                type UploadOptions = {
+                    metadata?: PinataMetadata;
+                    keys?: string;
+                    groupId?: string;
+                    vectorize?: boolean;
+                    url?: string;
+                };
+                ```
+                - **Note**
+                    - After this part, I am considering setting up IPFS node on home server
+                - Metadata
+                    - Template
+                    ```javascript
+                    {
+                        name: "",
+                        description: "",
+                        image: "",
+                        attributes: [ // This should be corresponding to what's in the project
+                            {
+                                trait_type: "cuteness",
+                                value: 100,
+                            },
+                        ],
+                    };
+                    ```
+                    - General idea
+                        - See code: `deploy.js: getIpfsTokenUris`
+                            - **Note**
+                                - `{...metadataTemplate}` -> Unpack `metadataTemplate`

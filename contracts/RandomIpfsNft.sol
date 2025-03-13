@@ -15,7 +15,7 @@ import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/V
  */
 contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
     enum Breed {
-        Border_Collie,
+        BORDER_COLLIE,
         SHIBA_INU,
         CHIHUAHUA
     }
