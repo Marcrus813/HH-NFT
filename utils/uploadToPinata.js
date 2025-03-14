@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const pinata = new PinataSDK({
     pinataJwt: process.env.PINATA_JWT,
-    pinataGateway: process.env.PINATA_GATEWAY,
+    pinataGateway: process.env.PINATA_GATEWAY_URL,
 });
 
 async function storeImages(imageSrcDir) {
@@ -19,12 +19,13 @@ async function storeImages(imageSrcDir) {
         });
 
         try {
-            const response = await pinata.upload.public.file(uploadFile);
+            console.log(`Uploading ${files[fileIndex]} to Pinata...`);
+            const response = await uploadFileToPinataWithRetry(uploadFile, 5);
             uploadResponseArray.push(response);
-            console.log(`Uploaded ${files[fileIndex]} to Pinata`);
+            console.log(`SUCCESS: Uploaded ${files[fileIndex]} to Pinata`);
         } catch (error) {
             console.log(
-                `Error uploading ${files[fileIndex]}: ${error.message}`,
+                `FAIL: Error uploading ${files[fileIndex]}: ${error.message}`,
             );
         }
     }
@@ -32,10 +33,29 @@ async function storeImages(imageSrcDir) {
     return { uploadResponseArray, files };
 }
 
+async function uploadFileToPinataWithRetry(uploadFile, retries) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await pinata.upload.public.file(uploadFile);
+            return response;
+        } catch (error) {
+            if (attempt === retries) {
+                throw error;
+            }
+            console.log(`Retrying upload (${attempt}/${retries})...`);
+        }
+    }
+}
+
 async function storeTokenUriMetadata(metadata) {
     console.log(`Uploading metadata: ${metadata.name}`);
     try {
-        const response = await pinata.upload.public.json(metadata);
+        const options = {
+            metadata: {
+                name: metadata.name,
+            }
+        }
+        const response = await pinata.upload.public.json(metadata, options);
         return response;
     } catch (error) {
         console.log(

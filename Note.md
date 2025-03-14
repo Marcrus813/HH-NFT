@@ -141,3 +141,19 @@
                         - See code: `deploy.js: getIpfsTokenUris`
                             - **Note**
                                 - `{...metadataTemplate}` -> Unpack `metadataTemplate`
+                    - In the contract, metadata uri is linked to token by `Breed`, so the filename and breed name should be consistent, and the order should be managed, to avoid nested for loop, I am using map
+                    - [ ] Problems
+                        - [ ] Sometimes file fetch error, so the best practice would be for the first time we call `storeImage` and `storeMetadata`, then print out the uploaded `uri`, then use the uri as static resource
+- Test
+    - Testing custom deploy
+        - Necessary? Only difference between `deploy.js` and plain ignition is that `deploy.js` includes uploading to pinata and setting `tokenUirs` dynamically, which could be done separately, and we are testing the contract not the deploy script
+    - **NOTE**
+        - Problems getting return value from non-view / non-pure functions
+            - I tried to get `requestId` from `requestNft`, but in ethers.js I got a transaction response, this is because [(source)](https://ethereum.stackexchange.com/questions/88119/i-see-no-way-to-obtain-the-return-value-of-a-non-view-function-ethers-js):
+                > The return value of a non-pure non-view function is available only when the function is called and validated on-chain(Unless use `eth_call` off-chain, it will not change storage permanently, so this is like `callStatic`); When you call such function off-chain (e.g. from an ethers.js script), you need to execute it within a transaction, and the "return value" is the hash of that transaction.
+                - So to work around this, I could use emitted event like I am doing now, I can also use `callStatic`(WITH ethers.js V5), explained:
+                    > Rather than executing the state-change of a transaction, it is possible to ask a node to pretend that a call is not state-changing and return the result.
+                    > This does not actually change any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
+                    > This otherwise functions the same as a Read-Only Method.
+                    - `ethers.js V6` syntax: `contract.functionName.staticCall(params)`
+

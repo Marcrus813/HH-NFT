@@ -28,7 +28,6 @@
         "h-node": "hardhat node",
         "h-i-deploy": "hardhat ignition deploy",
         "h-s-deploy": "hardhat run scripts/deploy.js",
-        "h-s-deploy-custom": "CUSTOM_TOKEN=true yarn hardhat run scripts/deploy.js ",
         "h-verify": "hardhat ignition verify",
         "h-run": "hardhat run"
     },

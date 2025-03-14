@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-
+import "hardhat/console.sol";
 /**
  * @title RandomIpfsNft
  * @dev Mint -> Use VRF to get random words -> Decide which asset to mint
@@ -105,7 +105,12 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
         _;
     }
 
-    function requestNft() public payable returns (uint256 requestId) {
+    function requestNft()
+        public
+        payable
+        enoughMintFee
+        returns (uint256 requestId)
+    {
         requestId = s_vrfCoordinator.requestRandomWords(
             VRFV2PlusClient.RandomWordsRequest({
                 keyHash: i_keyHash,
@@ -134,9 +139,9 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
 
         uint16 tier = getTier(requestedResult);
         Breed breed = Breed(tier);
-        emit NftFulfilled(requestId, tokenOwner, breed, randomWords);
         _safeMint(tokenOwner, newTokenId);
         _setTokenURI(newTokenId, s_tokenUris[uint16(breed)]);
+        emit NftFulfilled(requestId, tokenOwner, breed, randomWords);
         s_tokenCounter += 1;
     }
 
@@ -157,13 +162,13 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
         for (uint16 i = 0; i < chanceArray.length; i++) {
             if (
                 (moddedRandomNum >= visitedChance) &&
-                (moddedRandomNum < visitedChance + chanceArray[i])
+                (moddedRandomNum < chanceArray[i])
             ) {
                 tier = i;
                 success = true;
                 break;
             }
-            visitedChance += chanceArray[i];
+            visitedChance = chanceArray[i];
         }
         if (!success) {
             revert RandomIpfsNft__RangeOutOfBounds(moddedRandomNum);
@@ -202,9 +207,19 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
         result = i_mintFee;
     }
 
+    function getTokenUris() public view returns (string[] memory result) {
+        result = s_tokenUris;
+    }
+
     function getTokenUriOfTier(
         uint16 tier
     ) public view returns (string memory result) {
         result = s_tokenUris[tier];
+    }
+
+    function getTokenRequester(
+        uint256 requestId
+    ) public view returns (address requester) {
+        requester = s_requestIdToSender[requestId];
     }
 }
