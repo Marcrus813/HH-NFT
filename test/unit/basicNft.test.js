@@ -8,11 +8,14 @@ const {
     networkConfig,
     devChains,
 } = require("../../configs/network/network-config");
-const { constructorParams } = require("../../configs/resource/basicNftParams");
-const { basicNftResource } = require("../../configs/resource/resource-config");
+const { constructorParams } = require("../../configs/contract/basicNftParams");
+const { basicNftResource } = require("../../configs/contract/resource-config");
 const basicNftModule = require("../../ignition/modules/basicNft");
 
-const currentNetwork = process.env.NETWORK || "hardhat";
+let currentNetwork = process.env.NETWORK || "hardhat";
+if (currentNetwork === "localhost") {
+    currentNetwork = "hardhat";
+}
 const localFlag = devChains.includes(currentNetwork);
 
 if (!localFlag) {

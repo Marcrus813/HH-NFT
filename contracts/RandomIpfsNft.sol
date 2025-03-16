@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
 import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
-import "hardhat/console.sol";
+
 /**
  * @title RandomIpfsNft
  * @dev Mint -> Use VRF to get random words -> Decide which asset to mint
@@ -47,7 +47,8 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
     event NftFulfilled(
         uint256 indexed requestId,
         address indexed minter,
-        Breed indexed breed,
+        uint256 indexed tokenId,
+        Breed breed,
         uint256[] rawResults
     );
 
@@ -141,8 +142,8 @@ contract RandomIpfsNft is ERC721URIStorage, VRFConsumerBaseV2Plus {
         Breed breed = Breed(tier);
         _safeMint(tokenOwner, newTokenId);
         _setTokenURI(newTokenId, s_tokenUris[uint16(breed)]);
-        emit NftFulfilled(requestId, tokenOwner, breed, randomWords);
         s_tokenCounter += 1;
+        emit NftFulfilled(requestId, tokenOwner, newTokenId, breed, randomWords);
     }
 
     function getChanceArray()

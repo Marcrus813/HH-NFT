@@ -8,7 +8,10 @@ const {
 } = require("../../configs/contract/randomIpfsNftParams");
 const { devChains } = require("../../configs/network/network-config");
 
-const currentNetwork = process.env.NETWORK || "hardhat";
+let currentNetwork = process.env.NETWORK || "hardhat";
+if (currentNetwork === "localhost") {
+    currentNetwork = "hardhat";
+}
 const localFlag = devChains.includes(currentNetwork);
 
 const useCustomTokenUris = process.env.CUSTOM_TOKEN || "false";

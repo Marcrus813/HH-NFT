@@ -1,5 +1,5 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
-const { constructorParams } = require("../../configs/resource/basicNftParams");
+const { constructorParams } = require("../../configs/contract/basicNftParams");
 const {
     chainIds,
     networkConfig,

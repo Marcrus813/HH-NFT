@@ -4,7 +4,10 @@ const {
 } = require("../../configs/resource/vrfParams");
 const { devChains } = require("../../configs/network/network-config");
 
-const currentNetwork = process.env.NETWORK || "hardhat";
+let currentNetwork = process.env.NETWORK || "hardhat";
+if (currentNetwork === "localhost") {
+    currentNetwork = "hardhat";
+}
 const localFlag = devChains.includes(currentNetwork);
 
 module.exports = buildModule("vrfCoordinatorMock", (m) => {

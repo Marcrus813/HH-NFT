@@ -57,6 +57,12 @@
 
 ### Random IPFS NFT
 
+- Pros and cons
+    - Pros
+        - Cheap
+    - Cons
+        - Someone needs to pin our data
+
 - Random
 
     - Mint will trigger VRF -> Random number -> Dice to decide the token
@@ -144,6 +150,7 @@
                     - In the contract, metadata uri is linked to token by `Breed`, so the filename and breed name should be consistent, and the order should be managed, to avoid nested for loop, I am using map
                     - [ ] Problems
                         - [ ] Sometimes file fetch error, so the best practice would be for the first time we call `storeImage` and `storeMetadata`, then print out the uploaded `uri`, then use the uri as static resource
+
 - Test
     - Testing custom deploy
         - Necessary? Only difference between `deploy.js` and plain ignition is that `deploy.js` includes uploading to pinata and setting `tokenUirs` dynamically, which could be done separately, and we are testing the contract not the deploy script
@@ -156,4 +163,46 @@
                     > This does not actually change any state, but is free. This in some cases can be used to determine if a transaction will fail or succeed.
                     > This otherwise functions the same as a Read-Only Method.
                     - `ethers.js V6` syntax: `contract.functionName.staticCall(params)`
+    - [x] Problems
+        - [x] VRF is taking forever
+            - Some reverts are not displayed, so when encountering unclear problems, it might be helpful to try catch and log error
+                ```javascript
+                try {
+                    const fulfillTxn =
+                        await vrfCoordinatorMock.fulfillRandomWords(
+                            requestId,
+                            randomIpfsNftAddress,
+                        );
+                    console.log(
+                        "Transaction sent, waiting for confirmation...",
+                    );
+                    await fulfillTxn.wait();
+                    console.log("Transaction confirmed!");
+                } catch (error) {
+                    console.error(
+                        "Error while fulfilling random words:",
+                        error,
+                    );
+                }
+                ```
+                Here, we did not fund the subscription with enough LINK, added amount and it works fine now
+        - [x] Getting `InvalidRequest` when minting multiple tokens
+            - [x] Possible cause: When getting events, I am using index 0, on later emissions, I will always get the first request, so I need to restrict the range of the filter
+                - After adding
+                    ```javascript
+                    const currentBlockNumber =
+                        await ethers.provider.getBlockNumber();
+                    const randomIpfsNftRequestedEvents =
+                        await randomIpfsNft.queryFilter(
+                            randomIpfsNftRequestedEventFilter,
+                            currentBlockNumber,
+                        );
+                    ```
+                    it works as expected
 
+### Dynamic SVG NFT
+- Pros and cons
+    - Pros
+        - Data stored on chain
+    - Cons
+        - Expensive -> Use svg instead of PNG

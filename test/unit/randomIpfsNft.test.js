@@ -1,4 +1,4 @@
-const { ethers, ignition } = require("hardhat");
+const { ethers, ignition, network } = require("hardhat");
 const {
     loadFixture,
 } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
@@ -18,7 +18,10 @@ const {
 
 const { devChains } = require("../../configs/network/network-config");
 
-const currentNetwork = process.env.NETWORK || "hardhat";
+let currentNetwork = process.env.NETWORK || "hardhat";
+if (currentNetwork === "localhost") {
+    currentNetwork = "hardhat";
+}
 const localFlag = devChains.includes(currentNetwork);
 
 const pinata = new PinataSDK({
@@ -275,9 +278,35 @@ if (!localFlag) {
                 let minter0, minter1, minter2;
                 const enoughFee = ethers.parseEther("0.01");
                 const notEnoughFee = ethers.parseEther("0.009");
+
+                async function requestAndFulfill(minter) {
+                    const currentBlockNumber =
+                        await ethers.provider.getBlockNumber();
+                    await randomIpfsNft
+                        .connect(minter)
+                        .requestNft({ value: enoughFee });
+
+                    let requestId;
+                    const randomIpfsNftRequestedEventFilter =
+                        randomIpfsNft.filters.NftRequested();
+                    const randomIpfsNftRequestedEvents =
+                        await randomIpfsNft.queryFilter(
+                            randomIpfsNftRequestedEventFilter,
+                            currentBlockNumber,
+                        );
+                    requestId = randomIpfsNftRequestedEvents[0].args.requestId;
+
+                    const vrfFulfillTxn =
+                        await vrfCoordinatorMock.fulfillRandomWords(
+                            requestId,
+                            randomIpfsNftAddress,
+                        );
+                }
+
                 beforeEach(async () => {
-                    [minter0, minter1, minter2] = availableAccounts;
+                    [, minter0, minter1, minter2] = availableAccounts;
                 });
+
                 describe("Minting", () => {
                     it("Should setup the correct chance array", async () => {
                         const chances = await randomIpfsNft.getChanceArray();
@@ -286,28 +315,73 @@ if (!localFlag) {
                         expect(chances[2]).to.be.equals(100);
                     });
                     it("Should provide the correct token tier 0", async () => {
-                        const simTierRandomNum = 100;
+                        for (
+                            let simTierRandomNum = 100;
+                            simTierRandomNum <= 104;
+                            simTierRandomNum++
+                        ) {
+                            const tierForTierRandomNum =
+                                await randomIpfsNft.getTier(simTierRandomNum);
 
-                        const tierForTierRandomNum =
-                            await randomIpfsNft.getTier(simTierRandomNum);
-
-                        expect(tierForTierRandomNum).to.be.equals(0);
+                            try {
+                                expect(tierForTierRandomNum).to.be.equals(0);
+                            } catch (error) {
+                                if (!error.matchResult) {
+                                    console.log(
+                                        `Mismatch for \`simTierRandomNum\`: ${simTierRandomNum}`,
+                                    );
+                                } else {
+                                    console.error(error);
+                                }
+                                throw error;
+                            }
+                        }
                     });
                     it("Should provide the correct token tier 1", async () => {
-                        const simTierRandomNum = 106;
+                        for (
+                            let simTierRandomNum = 105;
+                            simTierRandomNum <= 129;
+                            simTierRandomNum++
+                        ) {
+                            const tierForTierRandomNum =
+                                await randomIpfsNft.getTier(simTierRandomNum);
 
-                        const tierForTierRandomNum =
-                            await randomIpfsNft.getTier(simTierRandomNum);
-
-                        expect(tierForTierRandomNum).to.be.equals(1);
+                            try {
+                                expect(tierForTierRandomNum).to.be.equals(1);
+                            } catch (error) {
+                                if (!error.matchResult) {
+                                    console.log(
+                                        `Mismatch for \`simTierRandomNum\`: ${simTierRandomNum}`,
+                                    );
+                                } else {
+                                    console.error(error);
+                                }
+                                throw error;
+                            }
+                        }
                     });
                     it("Should provide the correct token tier 2", async () => {
-                        const simTierRandomNum = 199;
+                        for (
+                            let simTierRandomNum = 130;
+                            simTierRandomNum < 199;
+                            simTierRandomNum++
+                        ) {
+                            const tierForTierRandomNum =
+                                await randomIpfsNft.getTier(simTierRandomNum);
 
-                        const tierForTierRandomNum =
-                            await randomIpfsNft.getTier(simTierRandomNum);
-
-                        expect(tierForTierRandomNum).to.be.equals(2);
+                            try {
+                                expect(tierForTierRandomNum).to.be.equals(2);
+                            } catch (error) {
+                                if (!error.matchResult) {
+                                    console.error(
+                                        `Mismatch for \`simTierRandomNum\`: ${simTierRandomNum}`,
+                                    );
+                                } else {
+                                    console.error(error);
+                                }
+                                throw error;
+                            }
+                        }
                     });
                     it("Should revert if not enough mint fee sent", async () => {
                         await expect(
@@ -326,12 +400,14 @@ if (!localFlag) {
                         /* const requestId = await randomIpfsNft
                             .connect(minter0)
                             .requestNft.staticCall({ value: enoughFee }); */
-
+                        const currentBlockNumber =
+                            await ethers.provider.getBlockNumber();
                         const requestNftEventFilter =
                             randomIpfsNft.filters.NftRequested();
                         const requestNftEvents =
                             await randomIpfsNft.queryFilter(
                                 requestNftEventFilter,
+                                currentBlockNumber,
                             );
                         const requestId = requestNftEvents[0].args.requestId;
 
@@ -342,17 +418,63 @@ if (!localFlag) {
                             .connect(minter0)
                             .requestNft({ value: enoughFee });
 
+                        const currentBlockNumber =
+                            await ethers.provider.getBlockNumber();
                         const requestNftEventFilter =
                             randomIpfsNft.filters.NftRequested();
                         const requestNftEvents =
                             await randomIpfsNft.queryFilter(
                                 requestNftEventFilter,
+                                currentBlockNumber,
                             );
                         const requestId = requestNftEvents[0].args.requestId;
                         const sender = requestNftEvents[0].args.sender;
 
                         expect(requestId).to.be.not.undefined;
                         expect(sender).to.be.equals(minter0.address);
+                    });
+                    it("Should emit a `NftFulfilled` event upon finishing", async () => {
+                        await randomIpfsNft
+                            .connect(minter0)
+                            .requestNft({ value: enoughFee });
+
+                        let requestId;
+                        const randomIpfsNftRequestedEventFilter =
+                            randomIpfsNft.filters.NftRequested();
+                        const randomIpfsNftRequestedEvents =
+                            await randomIpfsNft.queryFilter(
+                                randomIpfsNftRequestedEventFilter,
+                            );
+                        requestId =
+                            randomIpfsNftRequestedEvents[0].args.requestId;
+
+                        await vrfCoordinatorMock.fulfillRandomWords(
+                            requestId,
+                            randomIpfsNftAddress,
+                        );
+
+                        const currentBlockNumber =
+                            await ethers.provider.getBlockNumber();
+                        const randomIpfsNftFulfilledEventFilter =
+                            randomIpfsNft.filters.NftFulfilled();
+                        const randomIpfsNftFulfilledEvents =
+                            await randomIpfsNft.queryFilter(
+                                randomIpfsNftFulfilledEventFilter,
+                                currentBlockNumber,
+                            );
+                        const fulfilledRequestId =
+                            randomIpfsNftFulfilledEvents[0].args.requestId;
+                        const fulfilledMinter =
+                            randomIpfsNftFulfilledEvents[0].args.minter;
+                        const fulfilledBreed =
+                            randomIpfsNftFulfilledEvents[0].args.breed;
+                        const fulfilledRandomNums =
+                            randomIpfsNftFulfilledEvents[0].args.rawResults;
+
+                        expect(fulfilledRequestId).to.be.equals(requestId);
+                        expect(fulfilledMinter).to.be.equals(minter0.address);
+                        expect(fulfilledBreed).to.be.within(0, 2);
+                        expect(fulfilledRandomNums).to.be.not.undefined;
                     });
                     it("Should record the requester for the request id", async () => {
                         await randomIpfsNft
@@ -375,11 +497,14 @@ if (!localFlag) {
                         await new Promise(async (resolve, reject) => {
                             randomIpfsNft.once("NftFulfilled", async () => {
                                 try {
+                                    const currentBlockNumber =
+                                        await ethers.provider.getBlockNumber();
                                     const randomIpfsNftRequestedEventFilter =
-                                        randomIpfsNft.filters.NftRequested();
+                                        randomIpfsNft.filters.NftFulfilled();
                                     const randomIpfsNftRequestedEvents =
                                         await randomIpfsNft.queryFilter(
                                             randomIpfsNftRequestedEventFilter,
+                                            currentBlockNumber,
                                         );
                                     const randomNum =
                                         randomIpfsNftRequestedEvents[0].args
@@ -393,25 +518,169 @@ if (!localFlag) {
                                 resolve();
                             });
 
-                            await randomIpfsNft
-                                .connect(minter0)
-                                .requestNft({ value: enoughFee });
+                            await requestAndFulfill(minter0);
+                        });
+                    });
+                    it("Should correctly mint a token", async () => {
+                        const minter0BalanceBefore =
+                            await randomIpfsNft.balanceOf(minter0.address);
 
-                            let requestId;
-                            const randomIpfsNftRequestedEventFilter =
-                                randomIpfsNft.filters.NftRequested();
-                            const randomIpfsNftRequestedEvents =
-                                await randomIpfsNft.queryFilter(
-                                    randomIpfsNftRequestedEventFilter,
-                                );
-                            requestId =
-                                randomIpfsNftRequestedEvents[0].args.requestId;
+                        await new Promise(async (resolve, reject) => {
+                            randomIpfsNft.once("NftFulfilled", async () => {
+                                try {
+                                    const minter0BalanceAfter =
+                                        await randomIpfsNft.balanceOf(
+                                            minter0.address,
+                                        );
+                                    expect(minter0BalanceAfter).to.be.equals(
+                                        minter0BalanceBefore + 1n,
+                                    );
+                                } catch (error) {
+                                    if (!error.matchResult) {
+                                        reject(error);
+                                    }
+                                }
+                                resolve();
+                            });
 
-                            await vrfCoordinatorMock.fulfillRandomWords(
-                                requestId,
+                            await requestAndFulfill(minter0);
+                        });
+                    });
+                    it("Should correctly map the token owner based on requestId", async () => {
+                        await new Promise(async (resolve, reject) => {
+                            randomIpfsNft.once("NftFulfilled", async () => {
+                                try {
+                                    const currentBlockNumber =
+                                        await ethers.provider.getBlockNumber();
+                                    const randomIpfsNftFulfilledEventFilter =
+                                        randomIpfsNft.filters.NftFulfilled();
+                                    const randomIpfsNftFulfilledEvents =
+                                        await randomIpfsNft.queryFilter(
+                                            randomIpfsNftFulfilledEventFilter,
+                                            currentBlockNumber,
+                                        );
+                                    const tokenId =
+                                        randomIpfsNftFulfilledEvents[0].args
+                                            .tokenId;
+                                    const tokenOwner =
+                                        await randomIpfsNft.ownerOf(tokenId);
+                                    expect(tokenOwner).to.be.equals(
+                                        minter0.address,
+                                    );
+                                } catch (error) {
+                                    if (!error.matchResult) {
+                                        reject(error);
+                                    }
+                                }
+                                resolve();
+                            });
+
+                            await requestAndFulfill(minter0);
+                        });
+                    });
+
+                    it("Should correctly map the token to its uri", async () => {
+                        await new Promise(async (resolve, reject) => {
+                            randomIpfsNft.once("NftFulfilled", async () => {
+                                try {
+                                    const currentBlockNumber =
+                                        await ethers.provider.getBlockNumber();
+                                    const randomIpfsNftFulfilledEventFilter =
+                                        randomIpfsNft.filters.NftFulfilled();
+                                    const randomIpfsNftFulfilledEvents =
+                                        await randomIpfsNft.queryFilter(
+                                            randomIpfsNftFulfilledEventFilter,
+                                            currentBlockNumber,
+                                        );
+                                    const tokenId =
+                                        randomIpfsNftFulfilledEvents[0].args
+                                            .tokenId;
+                                    const tokenBreed =
+                                        randomIpfsNftFulfilledEvents[0].args
+                                            .breed;
+
+                                    const correctUri =
+                                        randomIpfsNftParams.tokenURIs[
+                                            tokenBreed
+                                        ];
+                                    const storedUri =
+                                        await randomIpfsNft.getTokenUriOfTier(
+                                            tokenBreed,
+                                        );
+                                    const actualUri =
+                                        await randomIpfsNft.tokenURI(tokenId);
+                                    expect(actualUri).to.be.equals(storedUri);
+                                    expect(actualUri).to.be.equals(correctUri);
+                                } catch (error) {
+                                    if (!error.matchResult) {
+                                        reject(error);
+                                    }
+                                }
+                                resolve();
+                            });
+
+                            await requestAndFulfill(minter0);
+                        });
+                    });
+
+                    it("Should correctly increment the token counter", async () => {
+                        const tokenCounterBefore =
+                            await randomIpfsNft.getTokenCounter();
+                        await new Promise(async (resolve, reject) => {
+                            randomIpfsNft.once("NftFulfilled", async () => {
+                                try {
+                                    const tokenCounterAfter =
+                                        await randomIpfsNft.getTokenCounter();
+                                    expect(tokenCounterAfter).to.be.equals(
+                                        tokenCounterBefore + 1n,
+                                    );
+                                } catch (error) {
+                                    if (!error.matchResult) {
+                                        reject(error);
+                                    }
+                                }
+
+                                resolve();
+                            });
+
+                            await requestAndFulfill(minter0);
+                        });
+                    });
+                });
+                describe("Withdraw", () => {
+                    beforeEach(async () => {
+                        await requestAndFulfill(minter0);
+                        await requestAndFulfill(minter1);
+                        await requestAndFulfill(minter2);
+                    });
+                    it("Should revert if withdrawer is not the deployer", async () => {
+                        await expect(
+                            randomIpfsNft.connect(minter0).withdraw(),
+                        ).to.be.revertedWith("Only callable by owner");
+                    });
+                    it("Should transfer balance to the deployer", async () => {
+                        const initialDeployerBalance = initialBalanceMap.get(
+                            deployer.address,
+                        );
+                        const initialContractBalance =
+                            await ethers.provider.getBalance(
                                 randomIpfsNftAddress,
                             );
-                        });
+
+                        await randomIpfsNft
+                            .connect(deployer)
+                            .withdraw();
+
+                        const finalContractBalance =
+                            await ethers.provider.getBalance(
+                                randomIpfsNftAddress,
+                            );
+                        const finalDeployerBalance =
+                            await ethers.provider.getBalance(deployer.address);
+                        expect(finalContractBalance).to.be.equals(0);
+                        expect(finalDeployerBalance).to.be.gte(
+                            initialDeployerBalance
+                        );
                     });
                 });
             });
