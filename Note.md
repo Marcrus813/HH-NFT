@@ -217,4 +217,4 @@
         - After we got base64, we can use: `data:image/svg+xml;base64,${base64}` to get the svg image, this can be done with `base64-sol` on-chain, also off-chain
     - `abi.encodePacked` & `abi.encode`
         - [Solidity cheat sheet docs](https://docs.soliditylang.org/en/latest/cheatsheet.html)
-        - [Remix example](https://remix.ethereum.org/): Encode workspace
+        - See example contract, play with it on remix
