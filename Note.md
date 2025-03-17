@@ -58,6 +58,7 @@
 ### Random IPFS NFT
 
 - Pros and cons
+
     - Pros
         - Cheap
     - Cons
@@ -201,8 +202,19 @@
                     it works as expected
 
 ### Dynamic SVG NFT
+
 - Pros and cons
     - Pros
         - Data stored on chain
     - Cons
         - Expensive -> Use svg instead of PNG
+- Contract layout
+    - Mint
+    - Store svg
+    - Show image based on parameter
+- Specify assets
+    - Pass URI containing image code to the contract -> Encode svg xml onchain to get Base64
+        - After we got base64, we can use: `data:image/svg+xml;base64,${base64}` to get the svg image, this can be done with `base64-sol` on-chain, also off-chain
+    - `abi.encodePacked` & `abi.encode`
+        - [Solidity cheat sheet docs](https://docs.soliditylang.org/en/latest/cheatsheet.html)
+        - [Remix example](https://remix.ethereum.org/): Encode workspace

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="1024"
+   height="1024"
+   viewBox="0 0 1024 1024"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="MLT.svg"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs18" />
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.80664063"
+     inkscape:cx="177.27845"
+     inkscape:cy="666.34382"
+     inkscape:window-width="1920"
+     inkscape:window-height="1009"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg14" />
+  <!-- Background Circle -->
+  <!-- Glowing Aura -->
+  <!-- Dagger Blade -->
+  <!-- Dagger Hilt -->
+  <!-- Crossguard -->
+  <!-- Glow Effect -->
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.51276"
+     id="rect4605"
+     width="154.28282"
+     height="781.93341"
+     x="1.5183058"
+     y="116.3867" />
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.51276;stroke-opacity:1"
+     id="rect4605-2"
+     width="154.28282"
+     height="781.93341"
+     x="869.0293"
+     y="116.81045" />
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.71134"
+     id="rect4605-3"
+     width="163.87186"
+     height="802.39288"
+     x="-29.092022"
+     y="194.92564"
+     transform="matrix(0.90192421,-0.43189434,0.47394876,0.88055243,0,0)" />
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.71134"
+     id="rect4605-3-3"
+     width="163.87186"
+     height="802.39288"
+     x="-937.40649"
+     y="-248.59442"
+     transform="matrix(-0.90192421,-0.43189434,-0.47394876,0.88055243,0,0)" />
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.51276"
+     id="rect5403"
+     width="1022.1237"
+     height="145.51675"
+     x="1.4649305"
+     y="114.6335" />
+  <rect
+     style="fill:#af8e00;fill-opacity:1;stroke:none;stroke-width:4.51276"
+     id="rect5409"
+     width="1016.8641"
+     height="129.73782"
+     x="3.2181349"
+     y="769.02051" />
+</svg>
