@@ -218,3 +218,6 @@
     - `abi.encodePacked` & `abi.encode`
         - [Solidity cheat sheet docs](https://docs.soliditylang.org/en/latest/cheatsheet.html)
         - See example contract, play with it on remix
+    - Got image -> Construct `tokenURI`
+        - Construct JSON -> Base64 JSON -> Add prefix: `data:application/json;base64`
+

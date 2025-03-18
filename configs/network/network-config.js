@@ -8,6 +8,7 @@ const chainIds = {
 const networkConfig = {
     11155111: {
         name: "sepolia",
+        
     },
     1: {
         name: "mainnet",
