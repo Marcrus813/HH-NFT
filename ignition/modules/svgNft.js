@@ -1,7 +1,9 @@
 const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
+const fs = require("fs");
+const path = require("path");
 
 const {
-    addresses,
+    priceFeeds,
     mockParams,
 } = require("../../configs/contract/aggregatorParams");
 const { svgNftParams } = require("../../configs/contract/svgNftParams");
@@ -15,6 +17,21 @@ const localFlag = devChains.includes(currentNetwork);
 
 module.exports = buildModule("SvgNft", (m) => {
     let svgNft;
+
+    const tokenName = svgNftParams.tokenName;
+    const tokenSymbol = svgNftParams.tokenSymbol;
+
+    const sakaSvg = fs.readFileSync(
+        path.join(__dirname, "../../resources/images/svgNft/SAKA.svg"),
+    );
+    const mltSvg = fs.readFileSync(
+        path.join(__dirname, "../../resources/images/svgNft/MLT.svg"),
+    );
+
+    const mintFee = svgNftParams.mintFee;
+
+    let svgNftConstructorParams;
+
     switch (localFlag) {
         case true:
             const mockDecimal = mockParams.decimals;
@@ -24,12 +41,37 @@ module.exports = buildModule("SvgNft", (m) => {
                 mockInitialAnswer,
             ]);
 
-            const tokenName = svgNftParams.tokenName;
-            const tokenSymbol = svgNftParams.tokenSymbol;
+            svgNftConstructorParams = [
+                aggregatorV3Mock,
+                tokenName,
+                tokenSymbol,
+                sakaSvg,
+                mltSvg,
+                mintFee,
+            ];
 
-            break;
+            svgNft = m.contract("SvgNft", svgNftConstructorParams, {
+                after: aggregatorV3Mock,
+            });
+
+            return { svgNft, aggregatorV3Mock };
 
         default:
+            const aggregatorV3Address =
+                priceFeeds.address.ethUsd[currentNetwork];
+            svgNftConstructorParams = [
+                aggregatorV3Address,
+                tokenName,
+                tokenSymbol,
+                sakaSvg,
+                mltSvg,
+                mintFee,
+            ];
+
+            svgNft = m.contract("SvgNft", svgNftConstructorParams, {
+                verify: true,
+            });
+
             break;
     }
 });
