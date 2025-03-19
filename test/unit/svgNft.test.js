@@ -219,7 +219,7 @@ if (!localFlag) {
                 const price = 200000000000;
 
                 const selectedImgUri =
-                    price > threshold ? sakaImgURI : mltImgURI;
+                    price > threshold ? mltImgURI : sakaImgURI;
 
                 const metaData = {
                     name: tokenName,
@@ -232,7 +232,7 @@ if (!localFlag) {
                 const metaDataBase64 =
                     Buffer.from(metaDataJson).toString("base64");
 
-                const constructedTokenURI = `data::application/json;base64,${metaDataBase64}`;
+                const constructedTokenURI = `data:application/json;base64,${metaDataBase64}`;
                 return { constructedTokenURI, metaDataJson };
             }
 

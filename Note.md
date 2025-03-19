@@ -233,3 +233,6 @@
                 - In my contract, only `stockPrice` is `int256` which won't matter if it were `uint256`, so contract is good to go for now
                 - `toString` in solidity? Why it does not exist natively? Why Openzeppelin has only `toString(uint256)` but nothing for `int256`?
             - Image different is cuz used different image
+            - Image difference: used wrong logic in test script
+            - Output different
+                - They actually are, but the decoded results are identical, why and does it matter?

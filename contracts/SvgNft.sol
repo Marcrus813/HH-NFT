@@ -7,6 +7,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "base64-sol/base64.sol";
 
+import "hardhat/console.sol";
+
 contract SvgNft is ERC721, Ownable {
     AggregatorV3Interface internal immutable i_priceFeed;
 
@@ -127,7 +129,11 @@ contract SvgNft is ERC721, Ownable {
         );
         // Add json prefix: data:application/json;base64
 
+        console.log("Img URI: ", imgUri);
+        console.log("Buffer: ", string(buffer));
+
         result = string.concat(_baseURI(), Base64.encode(buffer));
+        console.log("Result: ", result);
     }
 
     function getPriceFeedAddress() public view returns (address result) {
