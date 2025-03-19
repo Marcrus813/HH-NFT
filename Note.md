@@ -154,7 +154,7 @@
 
 - Test
     - Testing custom deploy
-        - Necessary? Only difference between `deploy.js` and plain ignition is that `deploy.js` includes uploading to pinata and setting `tokenUirs` dynamically, which could be done separately, and we are testing the contract not the deploy script
+        - Necessary? Only difference between `deploy.js` and plain ignition is that `deploy.js` includes uploading to pinata and setting `tokenUris` dynamically, which could be done separately, and we are testing the contract not the deploy script
     - **NOTE**
         - Problems getting return value from non-view / non-pure functions
             - I tried to get `requestId` from `requestNft`, but in ethers.js I got a transaction response, this is because [(source)](https://ethereum.stackexchange.com/questions/88119/i-see-no-way-to-obtain-the-return-value-of-a-non-view-function-ethers-js):
@@ -220,4 +220,16 @@
         - See example contract, play with it on remix
     - Got image -> Construct `tokenURI`
         - Construct JSON -> Base64 JSON -> Add prefix: `data:application/json;base64`
-
+    - [x] Problems
+        - [x] When deploying, I am getting `TypeError: object is not iterable (cannot read property Symbol(Symbol.iterator))` on `m.contract("SvgNft")`
+            - [x] `after` object is an array
+- Testing
+    - Thoughts
+        - Best practice to get event from txn?
+            - Use `txnReceipt.logs`, then the latest event, if using filters, should also use txnReceipt to get the accurate blocknum the filter, `getBlockNumber` could be inaccurate on mainnet where other txns are being fired
+    - Problems
+        - When using javascript to construct json, we get double quote, but in our contract, we are using single quote for json, could this lead to problem?
+            - Did some testing, imgUri is different, price value is different
+                - In my contract, only `stockPrice` is `int256` which won't matter if it were `uint256`, so contract is good to go for now
+                - `toString` in solidity? Why it does not exist natively? Why Openzeppelin has only `toString(uint256)` but nothing for `int256`?
+            - Image different is cuz used different image

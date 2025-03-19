@@ -1,4 +1,6 @@
 const randomIpfsNftModule = require("../ignition/modules/randomIpfsNft");
+const svgNftModule = require("../ignition/modules/svgNft");
+
 const { ignition } = require("hardhat");
 const {
     storeImages,
@@ -60,6 +62,10 @@ async function deployRandomIpfsNft() {
     }
 }
 
+async function deploySvgNft() {
+    await ignition.deploy(svgNftModule);
+}
+
 async function main() {
     switch (contractIndex) {
         case "1":
@@ -67,6 +73,7 @@ async function main() {
             break;
 
         case "2":
+            await deploySvgNft();
             break;
 
         case "all":

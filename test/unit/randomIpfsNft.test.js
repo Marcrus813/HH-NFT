@@ -296,11 +296,10 @@ if (!localFlag) {
                         );
                     requestId = randomIpfsNftRequestedEvents[0].args.requestId;
 
-                    const vrfFulfillTxn =
-                        await vrfCoordinatorMock.fulfillRandomWords(
-                            requestId,
-                            randomIpfsNftAddress,
-                        );
+                    await vrfCoordinatorMock.fulfillRandomWords(
+                        requestId,
+                        randomIpfsNftAddress,
+                    );
                 }
 
                 beforeEach(async () => {
@@ -667,9 +666,7 @@ if (!localFlag) {
                                 randomIpfsNftAddress,
                             );
 
-                        await randomIpfsNft
-                            .connect(deployer)
-                            .withdraw();
+                        await randomIpfsNft.connect(deployer).withdraw();
 
                         const finalContractBalance =
                             await ethers.provider.getBalance(
@@ -679,7 +676,7 @@ if (!localFlag) {
                             await ethers.provider.getBalance(deployer.address);
                         expect(finalContractBalance).to.be.equals(0);
                         expect(finalDeployerBalance).to.be.gte(
-                            initialDeployerBalance
+                            initialDeployerBalance,
                         );
                     });
                 });

@@ -15,7 +15,7 @@ if (currentNetwork === "localhost") {
 }
 const localFlag = devChains.includes(currentNetwork);
 
-module.exports = buildModule("SvgNft", (m) => {
+module.exports = buildModule("SvgNftToken", (m) => {
     let svgNft;
 
     const tokenName = svgNftParams.tokenName;
@@ -23,9 +23,11 @@ module.exports = buildModule("SvgNft", (m) => {
 
     const sakaSvg = fs.readFileSync(
         path.join(__dirname, "../../resources/images/svgNft/SAKA.svg"),
+        "utf-8"
     );
     const mltSvg = fs.readFileSync(
         path.join(__dirname, "../../resources/images/svgNft/MLT.svg"),
+        "utf-8",
     );
 
     const mintFee = svgNftParams.mintFee;
@@ -50,9 +52,20 @@ module.exports = buildModule("SvgNft", (m) => {
                 mintFee,
             ];
 
-            svgNft = m.contract("SvgNft", svgNftConstructorParams, {
-                after: aggregatorV3Mock,
-            });
+            svgNft = m.contract(
+                "SvgNft",
+                [
+                    aggregatorV3Mock,
+                    tokenName,
+                    tokenSymbol,
+                    sakaSvg,
+                    mltSvg,
+                    mintFee,
+                ],
+                {
+                    after: [aggregatorV3Mock],
+                },
+            );
 
             return { svgNft, aggregatorV3Mock };
 
@@ -72,6 +85,6 @@ module.exports = buildModule("SvgNft", (m) => {
                 verify: true,
             });
 
-            break;
+            return { svgNft };
     }
 });
