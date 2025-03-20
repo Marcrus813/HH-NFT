@@ -11,6 +11,9 @@ const {
 } = require("../resources/metadata/randomIpfsNft.template");
 const { tokenTireMap } = require("../configs/contract/randomIpfsNftParams");
 
+const {
+    randomIpfsNftParams,
+} = require("../configs/contract/randomIpfsNftParams");
 const tokenImagesDir = "../resources/images/";
 const contractIndex = process.env.CONTRACT_INDEX || "0";
 
@@ -18,32 +21,36 @@ const useCustomTokenUris = process.env.CUSTOM_TOKEN || "false";
 const customTokenFlag = useCustomTokenUris === "true";
 
 async function getIpfsTokenUris() {
-    let tokenUris = ["", "", ""];
-    const imgSrcDir = tokenImagesDir + "randomIpfsNft";
+    if (customTokenFlag) {
+        let tokenUris = ["", "", ""];
+        const imgSrcDir = tokenImagesDir + "randomIpfsNft";
 
-    // Get the responses of the uploaded images
-    const { uploadResponseArray, files } = await storeImages(imgSrcDir);
-    for (imageUploadResponse in uploadResponseArray) {
-        // In this syntax, imageUploadResponse is the index
-        // Create metadata -> upload metadata
-        let tokenUriMetadata = { ...metadataTemplate };
-        const tokenName = files[imageUploadResponse].replace(".png", "");
-        tokenUriMetadata.name = tokenName; // Getting the file name without the extension
-        tokenUriMetadata.description = `A ${tokenUriMetadata.name} friend!`;
-        tokenUriMetadata.image = `ipfs://${uploadResponseArray[imageUploadResponse].cid}`; // Use cid to retrieve
+        // Get the responses of the uploaded images
+        const { uploadResponseArray, files } = await storeImages(imgSrcDir);
+        for (imageUploadResponse in uploadResponseArray) {
+            // In this syntax, imageUploadResponse is the index
+            // Create metadata -> upload metadata
+            let tokenUriMetadata = { ...metadataTemplate };
+            const tokenName = files[imageUploadResponse].replace(".png", "");
+            tokenUriMetadata.name = tokenName; // Getting the file name without the extension
+            tokenUriMetadata.description = `A ${tokenUriMetadata.name} friend!`;
+            tokenUriMetadata.image = `ipfs://${uploadResponseArray[imageUploadResponse].cid}`; // Use cid to retrieve
 
-        // Upload metadata
-        const metadataUploadResponse =
-            await storeTokenUriMetadata(tokenUriMetadata);
-        const tokenTierMap = tokenTireMap();
-        const tier = tokenTierMap.get(tokenName.toLowerCase());
-        if (metadataUploadResponse) {
-            tokenUris[tier] = `ipfs://${metadataUploadResponse.cid}`;
+            // Upload metadata
+            const metadataUploadResponse =
+                await storeTokenUriMetadata(tokenUriMetadata);
+            const tokenTierMap = tokenTireMap();
+            const tier = tokenTierMap.get(tokenName.toLowerCase());
+            if (metadataUploadResponse) {
+                tokenUris[tier] = `ipfs://${metadataUploadResponse.cid}`;
+            }
         }
-    }
-    console.log(tokenUris);
+        console.log(tokenUris);
 
-    return tokenUris;
+        return tokenUris;
+    } else {
+        return randomIpfsNftParams.tokenURIs;
+    }
 }
 
 async function deployRandomIpfsNft() {

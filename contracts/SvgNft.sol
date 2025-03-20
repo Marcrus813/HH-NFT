@@ -7,8 +7,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import "base64-sol/base64.sol";
 
-import "hardhat/console.sol";
-
 contract SvgNft is ERC721, Ownable {
     AggregatorV3Interface internal immutable i_priceFeed;
 
@@ -24,7 +22,6 @@ contract SvgNft is ERC721, Ownable {
     mapping(uint256 => int256) s_tokenThreshold;
 
     error SvgNft__NotEnoughFee();
-    error SvgNft__TokenNotFound(uint256 tokenId);
 
     event NftMinted(
         uint256 indexed tokenId,
@@ -39,7 +36,7 @@ contract SvgNft is ERC721, Ownable {
         string memory sakaSvg,
         string memory mltSvg,
         uint256 mintFee
-    ) ERC721(tokenName, tokenSymbol) {
+    ) ERC721(tokenName, tokenSymbol) Ownable(msg.sender) {
         i_priceFeed = AggregatorV3Interface(priceFeedAddress);
         s_tokenCounter = 0;
         i_mintFee = mintFee;
@@ -97,7 +94,7 @@ contract SvgNft is ERC721, Ownable {
     function tokenURI(
         uint256 tokenId
     ) public view override returns (string memory result) {
-        require(_exists(tokenId), SvgNft__TokenNotFound(tokenId));
+        _requireOwned(tokenId); // Use openzeppelin, if non-exist, will revert with ERC721 error: `ERC721NonexistentToken`
 
         int256 stockPrice = getTokenStockPrice();
         string memory imgUri;
@@ -120,20 +117,15 @@ contract SvgNft is ERC721, Ownable {
                 '",',
                 '"attributes":',
                 "[",
-                '{"trait_type": "stockPrice","value":',
-                Strings.toString(uint256(stockPrice)),
+                '{"trait_type":"stockPrice","value":',
+                Strings.toStringSigned(stockPrice),
                 "}",
                 "]",
                 "}"
             )
         );
         // Add json prefix: data:application/json;base64
-
-        console.log("Img URI: ", imgUri);
-        console.log("Buffer: ", string(buffer));
-
         result = string.concat(_baseURI(), Base64.encode(buffer));
-        console.log("Result: ", result);
     }
 
     function getPriceFeedAddress() public view returns (address result) {

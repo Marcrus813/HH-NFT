@@ -30,7 +30,7 @@ if (!localFlag) {
 
         let initialBalanceMap = new Map();
         let availableAccounts;
-        let deployer;
+        let deployer, minter0, minter1;
 
         async function deployFixture() {
             const { svgNft, aggregatorV3Mock } =
@@ -39,7 +39,7 @@ if (!localFlag) {
             aggregatorMockAddress = await aggregatorV3Mock.getAddress();
 
             availableAccounts = await ethers.getSigners();
-            [deployer] = availableAccounts;
+            [deployer, minter0, minter1] = availableAccounts;
             for (let account of availableAccounts) {
                 const accountBalance = await ethers.provider.getBalance(
                     account.address,
@@ -171,13 +171,12 @@ if (!localFlag) {
                 await expect(svgNft.tokenURI(randomNum))
                     .to.be.revertedWithCustomError(
                         svgNft,
-                        "SvgNft__TokenNotFound",
+                        "ERC721NonexistentToken",
                     )
                     .withArgs(randomNum);
             });
         });
         describe("Minting", () => {
-            let minter0, minter1;
             const mintFee = svgNftParams.mintFee;
             const defaultThreshold = 200000000000 - 1;
 
@@ -233,11 +232,10 @@ if (!localFlag) {
                     Buffer.from(metaDataJson).toString("base64");
 
                 const constructedTokenURI = `data:application/json;base64,${metaDataBase64}`;
-                return { constructedTokenURI, metaDataJson };
+                return { constructedTokenURI };
             }
 
             beforeEach(async () => {
-                [, minter0, minter1] = availableAccounts;
                 await mintToken(minter0, mintFee);
             });
 
@@ -291,11 +289,74 @@ if (!localFlag) {
                     mintBlockNum,
                 );
                 const tokenId = mintTokenEvents[0].args.tokenId;
-                const {constructedTokenURI, metaDataJson} = await constructTokenURI(threshold);
+                const { constructedTokenURI } =
+                    await constructTokenURI(threshold);
                 const tokenURI = await svgNft.tokenURI(tokenId);
                 expect(tokenURI).to.be.equals(constructedTokenURI);
             });
-            it("Should have different token URI based on price and threshold", async () => {});
+            it("Should have different token URI based on price and threshold", async () => {
+                const threshold0 = 150000000000;
+                const threshold1 = 250000000000;
+
+                const constructedTokenUri0 = (
+                    await constructTokenURI(threshold0)
+                ).constructedTokenURI;
+                const constructedTokenUri1 = (
+                    await constructTokenURI(threshold1)
+                ).constructedTokenURI;
+
+                const mint0BlockNum = await mintToken(minter1, threshold0);
+                const mint0TokenEventFilter = svgNft.filters.NftMinted();
+                const mint0TokenEvents = await svgNft.queryFilter(
+                    mint0TokenEventFilter,
+                    mint0BlockNum,
+                );
+                const tokenId0 = mint0TokenEvents[0].args.tokenId;
+                const tokenUri0 = await svgNft.tokenURI(tokenId0);
+
+                expect(tokenUri0).to.be.equals(constructedTokenUri0);
+
+                const mint1BlockNum = await mintToken(minter1, threshold1);
+                const mint1TokenEventFilter = svgNft.filters.NftMinted();
+                const mint1TokenEvents = await svgNft.queryFilter(
+                    mint1TokenEventFilter,
+                    mint1BlockNum,
+                );
+                const tokenId1 = mint1TokenEvents[0].args.tokenId;
+                const tokenUri1 = await svgNft.tokenURI(tokenId1);
+                expect(tokenUri1).to.be.equals(constructedTokenUri1);
+            });
+        });
+        describe("Withdrawal", () => {
+            it("Should revert if not called by owner", async () => {
+                await expect(svgNft.connect(minter0).withdraw())
+                    .to.be.revertedWithCustomError(
+                        svgNft,
+                        "OwnableUnauthorizedAccount",
+                    )
+                    .withArgs(minter0.address);
+            });
+            it("Should transfer contract balance to deployer", async () => {
+                const contractBalanceBefore =
+                    await ethers.provider.getBalance(svgNftAddress);
+                const deployerBalanceBefore = initialBalanceMap.get(
+                    deployer.address,
+                );
+                const withdrawTxn = await svgNft.withdraw();
+                const withdrawTxnReceipt = await withdrawTxn.wait();
+                const { fee } = withdrawTxnReceipt;
+
+                const contractBalanceAfter =
+                    await ethers.provider.getBalance(svgNftAddress);
+                const deployerBalanceAfter = await ethers.provider.getBalance(
+                    deployer.address,
+                );
+
+                expect(contractBalanceAfter).to.be.equals(0);
+                expect(deployerBalanceAfter).to.be.equals(
+                    deployerBalanceBefore + contractBalanceBefore - fee,
+                );
+            });
         });
     });
 }

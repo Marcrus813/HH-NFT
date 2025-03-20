@@ -1,5 +1,7 @@
 const vrfConsumerParams = {
-    mainnet: {},
+    mainnet: {
+        
+    },
     sepolia: {
         subscriptionId:
             "73695224490739830815926182485269773582526809004350983370830623188378858758081",

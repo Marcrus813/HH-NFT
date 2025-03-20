@@ -3,7 +3,7 @@ const { buildModule } = require("@nomicfoundation/hardhat-ignition/modules");
 const { mockParams } = require("../../configs/contract/aggregatorParams");
 
 const { devChains } = require("../../configs/network/network-config");
-let currentNetwork = process.env.HARDHAT_NETWORK || "hardhat";
+let currentNetwork = process.env.NETWORK || "hardhat";
 if (currentNetwork === "localhost") {
     currentNetwork = "hardhat";
 }
