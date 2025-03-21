@@ -245,3 +245,9 @@
         - Problem only with random nft, svg nft works fine, so not a sepolia issue, and we are also good when testing locally, so possibly VRF's issue?
         - SVG
             - I am always getting saka token
+            - Price feed result is `10 ** 8`, when we mint we are using `ethers.parseEther()` so it is `10 ** 18`, that's why token is always below threshold, hence always saka
+        - **NOTE**
+            - In ignition to redeploy a contract with different parameters
+                - Ignition will detect parameter changes and warn, to continue redeploy, we need to reconcile with previous future, to do that we need to wipe previous future with
+                    > `yarn hardhat ignition wipe [deployment ID] [future ID]`
+                Example: `yarn hardhat ignition wipe chain-11155111 RandomIpfsNft#RandomIpfsNft`, then redeploy

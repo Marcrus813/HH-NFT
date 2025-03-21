@@ -53,21 +53,26 @@ async function main() {
     console.log("Minting NFTs...");
     console.log("Minting Random IPFS NFT");
 
-    /* let requestRandomNftTxn;
-
-    try {
-        requestRandomNftTxn = await randomIpfsNft.connect(deployer).requestNft({
-            value: randomMintFee,
+    await new Promise(async (resolve, reject) => {
+        randomIpfsNft.once("NftFulfilled", async () => {
+            resolve();
         });
-    } catch (error) {
-        console.log(JSON.stringify(error, null, 2));
-        const decoded = randomNftInterface.parseError(error.data);
-        console.log(decoded);
-    }
 
-    const requestRandomNftTxnReceipt = requestRandomNftTxn.wait(1); */
+        try {
+            const requestRandomNftTxn = await randomIpfsNft
+                .connect(deployer)
+                .requestNft({
+                    value: randomMintFee,
+                });
+            const requestRandomNftTxnReceipt = requestRandomNftTxn.wait(1);
+        } catch (error) {
+            const decoded = randomNftInterface.parseError(error.data);
+            console.log(decoded);
+            reject();
+        }
+    });
 
-    const threshold = ethers.parseEther("3000");
+    /* const threshold = 100000000000n;
     console.log(`Minting SVG NFT with threshold: ${threshold}`);
     let mintSvgNftTxn;
     try {
@@ -78,7 +83,7 @@ async function main() {
         const decoded = svgNftInterface.parseError(error.data);
         console.log(decoded);
     }
-    const mintSvgNftTxnReceipt = await mintSvgNftTxn.wait(1);
+    const mintSvgNftTxnReceipt = await mintSvgNftTxn.wait(1); */
 
     console.log("NFTs minted successfully!");
 
