@@ -243,11 +243,12 @@
     - After deploying, use [Opensea testnet](testnets.opensea.io) to checkout the contract
     - Stage test is still failing, I am considering forking
         - Problem only with random nft, svg nft works fine, so not a sepolia issue, and we are also good when testing locally, so possibly VRF's issue?
+            - Not VRF issue, official example works fine
+            - Callback gas limit: Gas limit for `VRFCoordinator` to call our `fulfillRandomWords`, since we are doing more than the example, we need to set the gas limit higher than default: `40000`
         - SVG
             - I am always getting saka token
             - Price feed result is `10 ** 8`, when we mint we are using `ethers.parseEther()` so it is `10 ** 18`, that's why token is always below threshold, hence always saka
         - **NOTE**
             - In ignition to redeploy a contract with different parameters
-                - Ignition will detect parameter changes and warn, to continue redeploy, we need to reconcile with previous future, to do that we need to wipe previous future with
-                    > `yarn hardhat ignition wipe [deployment ID] [future ID]`
-                Example: `yarn hardhat ignition wipe chain-11155111 RandomIpfsNft#RandomIpfsNft`, then redeploy
+                - Ignition will detect parameter changes and warn, to continue redeploy, we need to reconcile with previous future, to do that we need to wipe previous future with > `yarn hardhat ignition wipe [deployment ID] [future ID]`
+                  Example: `yarn hardhat ignition wipe chain-11155111 RandomIpfsNft#RandomIpfsNft`, then redeploy
